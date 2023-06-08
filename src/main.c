@@ -88,6 +88,7 @@ void taskEncoder(void *pvParametr) {
 void app_main()
 {
     xTaskCreate(taskEncoder, "taskEncoder", 4096, NULL, 5, NULL);
+    // test branchs
 }
 
 

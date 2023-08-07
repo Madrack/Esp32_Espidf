@@ -1,4 +1,18 @@
 3v3 encoder +
-16  GPIO_A encoder
-17  GPIO_b encoder
+GPIO_A encoder      16 
+GPIO_b encoder      17
 
+T_IRQ
+T_D0
+T_DIN
+T_CLK
+
+SDO(MISO)   подключить на GPIO19
+LED         VCC
+SCK         GPIO_19 переключить на GPIO_18(соседний)
+SDI(MOSI)   GPIO_23
+DC          GPIO_4
+Reset       VCC  переключить на GPIO_2
+CS          GPIO_0 переключить на GPIO_5
+GND         GND
+VCC         VCC

@@ -1,0 +1,4 @@
+3v3 encoder +
+16  GPIO_A encoder
+17  GPIO_b encoder
+

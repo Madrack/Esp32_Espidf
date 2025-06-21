@@ -34,6 +34,7 @@
 
 #define ROT_ENC_A_GPIO (16)
 #define ROT_ENC_B_GPIO (17)
+#define ROT_ENC_BTN_GPIO (18) // Пример: GPIO 18 для кнопки энкодера
 
 #define ENABLE_HALF_STEPS true  // Set to true to enable tracking of rotary encoder at half step resolution
 #define RESET_AT          0      // Set to a positive non-zero number to reset the position if this value is exceeded
@@ -50,6 +51,8 @@ void taskEncoder(void *pvParametr) {
 #ifdef FLIP_DIRECTION
     ESP_ERROR_CHECK(rotary_encoder_flip_direction(&info));
 #endif
+    // Инициализация кнопки энкодера
+    ESP_ERROR_CHECK(rotary_encoder_set_button(&info, ROT_ENC_BTN_GPIO));
 
     // Create a queue for events from the rotary encoder driver.
     // Tasks can read from this queue to receive up to date position information.
@@ -57,12 +60,17 @@ void taskEncoder(void *pvParametr) {
     ESP_ERROR_CHECK(rotary_encoder_set_queue(&info, event_queue));
     while (1)
     {
-        // Wait for incoming events on the event queue.
         rotary_encoder_event_t event = { 0 };
         if (xQueueReceive(event_queue, &event, 1000 / portTICK_PERIOD_MS) == pdTRUE)
         {
-            ESP_LOGI(TAG, "Event: position %d, direction %s", event.state.position,
-                     event.state.direction ? (event.state.direction == ROTARY_ENCODER_DIRECTION_CLOCKWISE ? "CW" : "CCW") : "NOT_SET");
+            if (event.button_event == ROTARY_ENCODER_EVENT_BUTTON_PRESSED) {
+                ESP_LOGI(TAG, "Кнопка энкодера нажата!");
+            } else if (event.button_event == ROTARY_ENCODER_EVENT_BUTTON_RELEASED) {
+                ESP_LOGI(TAG, "Кнопка энкодера отпущена!");
+            } else {
+                ESP_LOGI(TAG, "Event: position %d, direction %s", event.state.position,
+                         event.state.direction ? (event.state.direction == ROTARY_ENCODER_DIRECTION_CLOCKWISE ? "CW" : "CCW") : "NOT_SET");
+            }
         }
         else
         {

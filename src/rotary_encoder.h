@@ -97,6 +97,7 @@ typedef struct
 typedef struct
 {
     rotary_encoder_state_t state;  ///< The device state corresponding to this event
+    rotary_encoder_button_event_type_t button_event; ///< Событие кнопки (если есть)
 } rotary_encoder_event_t;
 
 /**
@@ -163,6 +164,26 @@ esp_err_t rotary_encoder_get_state(const rotary_encoder_info_t * info, rotary_en
  * @return ESP_OK if successful, ESP_FAIL or ESP_ERR_* if an error occurred.
  */
 esp_err_t rotary_encoder_reset(rotary_encoder_info_t * info);
+
+/**
+ * @brief Инициализация кнопки энкодера (опционально)
+ * @param[in, out] info Указатель на rotary_encoder_info_t
+ * @param[in] pin_btn GPIO номер для кнопки энкодера
+ * @return ESP_OK если успешно
+ */
+esp_err_t rotary_encoder_set_button(rotary_encoder_info_t * info, gpio_num_t pin_btn);
+
+/**
+ * @brief Типы событий для кнопки энкодера
+ */
+typedef enum {
+    ROTARY_ENCODER_EVENT_NONE = 0,
+    ROTARY_ENCODER_EVENT_ROTATE,
+    ROTARY_ENCODER_EVENT_BUTTON_PRESSED,
+    ROTARY_ENCODER_EVENT_BUTTON_RELEASED,
+    ROTARY_ENCODER_EVENT_BUTTON_CLICKED,
+    ROTARY_ENCODER_EVENT_BUTTON_LONG_PRESSED
+} rotary_encoder_button_event_type_t;
 
 
 #ifdef __cplusplus

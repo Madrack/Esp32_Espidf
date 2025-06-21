@@ -92,6 +92,11 @@
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 #include "driver/gpio.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "esp_log.h"
+#include "rotary_encoder.h"
 
 #define TAG "rotary_encoder"
 
@@ -206,6 +211,40 @@ static void IRAM_ATTR _isr_rotenc(void * args)
         {
             portYIELD_FROM_ISR();
         }
+    }
+}
+
+static void IRAM_ATTR _isr_button(void *args)
+{
+    rotary_encoder_info_t *info = (rotary_encoder_info_t *)args;
+    static int64_t last_press_time = 0;
+    int level = gpio_get_level(info->pin_btn);
+    int64_t now = esp_timer_get_time() / 1000;
+    if (level == 0) // нажатие (если кнопка замыкает на GND)
+    {
+        if (now - last_press_time > ROTARY_ENCODER_BUTTON_DEBOUNCE_MS)
+        {
+            rotary_encoder_event_t event = {
+                .state = info->state,
+                .button_event = ROTARY_ENCODER_EVENT_BUTTON_PRESSED
+            };
+            BaseType_t task_woken = pdFALSE;
+            if (info->queue)
+                xQueueOverwriteFromISR(info->queue, &event, &task_woken);
+            if (task_woken) portYIELD_FROM_ISR();
+            last_press_time = now;
+        }
+    }
+    else // отпускание
+    {
+        rotary_encoder_event_t event = {
+            .state = info->state,
+            .button_event = ROTARY_ENCODER_EVENT_BUTTON_RELEASED
+        };
+        BaseType_t task_woken = pdFALSE;
+        if (info->queue)
+            xQueueOverwriteFromISR(info->queue, &event, &task_woken);
+        if (task_woken) portYIELD_FROM_ISR();
     }
 }
 
@@ -354,4 +393,20 @@ esp_err_t rotary_encoder_reset(rotary_encoder_info_t * info)
         err = ESP_ERR_INVALID_ARG;
     }
     return err;
+}
+
+esp_err_t rotary_encoder_set_button(rotary_encoder_info_t * info, gpio_num_t pin_btn)
+{
+    if (!info) return ESP_ERR_INVALID_ARG;
+    info->pin_btn = pin_btn;
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << pin_btn),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_ANYEDGE
+    };
+    gpio_config(&io_conf);
+    gpio_isr_handler_add(pin_btn, _isr_button, info);
+    return ESP_OK;
 }

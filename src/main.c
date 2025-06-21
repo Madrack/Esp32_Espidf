@@ -36,16 +36,17 @@
 #define ROT_ENC_B_GPIO (17)
 #define ROT_ENC_BTN_GPIO (18) // Пример: GPIO 18 для кнопки энкодера
 
-#define ENABLE_HALF_STEPS true  // Set to true to enable tracking of rotary encoder at half step resolution
-#define RESET_AT          0      // Set to a positive non-zero number to reset the position if this value is exceeded
-#define FLIP_DIRECTION    false  // Set to true to reverse the clockwise/counterclockwise sense
+#define ENABLE_HALF_STEPS true // Set to true to enable tracking of rotary encoder at half step resolution
+#define RESET_AT 0             // Set to a positive non-zero number to reset the position if this value is exceeded
+#define FLIP_DIRECTION false   // Set to true to reverse the clockwise/counterclockwise sense
 
-void taskEncoder(void *pvParametr) {
+void taskEncoder(void *pvParametr)
+{
     // esp32-rotary-encoder requires that the GPIO ISR service is installed before calling rotary_encoder_register()
     ESP_ERROR_CHECK(gpio_install_isr_service(0));
 
     // Initialise the rotary encoder device with the GPIOs for A and B signals
-    rotary_encoder_info_t info = { 0 };
+    rotary_encoder_info_t info = {0};
     ESP_ERROR_CHECK(rotary_encoder_init(&info, ROT_ENC_A_GPIO, ROT_ENC_B_GPIO));
     ESP_ERROR_CHECK(rotary_encoder_enable_half_steps(&info, ENABLE_HALF_STEPS));
 #ifdef FLIP_DIRECTION
@@ -60,14 +61,19 @@ void taskEncoder(void *pvParametr) {
     ESP_ERROR_CHECK(rotary_encoder_set_queue(&info, event_queue));
     while (1)
     {
-        rotary_encoder_event_t event = { 0 };
+        rotary_encoder_event_t event = {0};
         if (xQueueReceive(event_queue, &event, 1000 / portTICK_PERIOD_MS) == pdTRUE)
         {
-            if (event.button_event == ROTARY_ENCODER_EVENT_BUTTON_PRESSED) {
+            if (event.button_event == ROTARY_ENCODER_EVENT_BUTTON_PRESSED)
+            {
                 ESP_LOGI(TAG, "Кнопка энкодера нажата!");
-            } else if (event.button_event == ROTARY_ENCODER_EVENT_BUTTON_RELEASED) {
+            }
+            else if (event.button_event == ROTARY_ENCODER_EVENT_BUTTON_RELEASED)
+            {
                 ESP_LOGI(TAG, "Кнопка энкодера отпущена!");
-            } else {
+            }
+            else
+            {
                 ESP_LOGI(TAG, "Event: position %d, direction %s", event.state.position,
                          event.state.direction ? (event.state.direction == ROTARY_ENCODER_DIRECTION_CLOCKWISE ? "CW" : "CCW") : "NOT_SET");
             }
@@ -75,7 +81,7 @@ void taskEncoder(void *pvParametr) {
         else
         {
             // Poll current position and direction
-            rotary_encoder_state_t state = { 0 };
+            rotary_encoder_state_t state = {0};
             ESP_ERROR_CHECK(rotary_encoder_get_state(&info, &state));
             ESP_LOGI(TAG, "Poll: position %d, direction %s", state.position,
                      state.direction ? (state.direction == ROTARY_ENCODER_DIRECTION_CLOCKWISE ? "CW" : "CCW") : "NOT_SET");

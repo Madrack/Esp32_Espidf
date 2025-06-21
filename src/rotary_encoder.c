@@ -107,48 +107,48 @@
 
 #define TABLE_ROWS 7
 
-#define DIR_NONE 0x0   // No complete step yet.
-#define DIR_CW   0x10  // Clockwise step.
-#define DIR_CCW  0x20  // Anti-clockwise step.
+#define DIR_NONE 0x0 // No complete step yet.
+#define DIR_CW 0x10  // Clockwise step.
+#define DIR_CCW 0x20 // Anti-clockwise step.
 
 // Create the half-step state table (emits a code at 00 and 11)
-#define R_START       0x0
-#define H_CCW_BEGIN   0x1
-#define H_CW_BEGIN    0x2
-#define H_START_M     0x3
-#define H_CW_BEGIN_M  0x4
+#define R_START 0x0
+#define H_CCW_BEGIN 0x1
+#define H_CW_BEGIN 0x2
+#define H_START_M 0x3
+#define H_CW_BEGIN_M 0x4
 #define H_CCW_BEGIN_M 0x5
 
 static const uint8_t _ttable_half[TABLE_ROWS][TABLE_COLS] = {
     // 00                  01              10            11                   // BA
-    {H_START_M,            H_CW_BEGIN,     H_CCW_BEGIN,  R_START},            // R_START (00)
-    {H_START_M | DIR_CCW,  R_START,        H_CCW_BEGIN,  R_START},            // H_CCW_BEGIN
-    {H_START_M | DIR_CW,   H_CW_BEGIN,     R_START,      R_START},            // H_CW_BEGIN
-    {H_START_M,            H_CCW_BEGIN_M,  H_CW_BEGIN_M, R_START},            // H_START_M (11)
-    {H_START_M,            H_START_M,      H_CW_BEGIN_M, R_START | DIR_CW},   // H_CW_BEGIN_M
-    {H_START_M,            H_CCW_BEGIN_M,  H_START_M,    R_START | DIR_CCW},  // H_CCW_BEGIN_M
+    {H_START_M, H_CW_BEGIN, H_CCW_BEGIN, R_START},            // R_START (00)
+    {H_START_M | DIR_CCW, R_START, H_CCW_BEGIN, R_START},     // H_CCW_BEGIN
+    {H_START_M | DIR_CW, H_CW_BEGIN, R_START, R_START},       // H_CW_BEGIN
+    {H_START_M, H_CCW_BEGIN_M, H_CW_BEGIN_M, R_START},        // H_START_M (11)
+    {H_START_M, H_START_M, H_CW_BEGIN_M, R_START | DIR_CW},   // H_CW_BEGIN_M
+    {H_START_M, H_CCW_BEGIN_M, H_START_M, R_START | DIR_CCW}, // H_CCW_BEGIN_M
 };
 
 // Create the full-step state table (emits a code at 00 only)
-#  define F_CW_FINAL  0x1
-#  define F_CW_BEGIN  0x2
-#  define F_CW_NEXT   0x3
-#  define F_CCW_BEGIN 0x4
-#  define F_CCW_FINAL 0x5
-#  define F_CCW_NEXT  0x6
+#define F_CW_FINAL 0x1
+#define F_CW_BEGIN 0x2
+#define F_CW_NEXT 0x3
+#define F_CCW_BEGIN 0x4
+#define F_CCW_FINAL 0x5
+#define F_CCW_NEXT 0x6
 
 static const uint8_t _ttable_full[TABLE_ROWS][TABLE_COLS] = {
     // 00        01           10           11                  // BA
-    {R_START,    F_CW_BEGIN,  F_CCW_BEGIN, R_START},           // R_START
-    {F_CW_NEXT,  R_START,     F_CW_FINAL,  R_START | DIR_CW},  // F_CW_FINAL
-    {F_CW_NEXT,  F_CW_BEGIN,  R_START,     R_START},           // F_CW_BEGIN
-    {F_CW_NEXT,  F_CW_BEGIN,  F_CW_FINAL,  R_START},           // F_CW_NEXT
-    {F_CCW_NEXT, R_START,     F_CCW_BEGIN, R_START},           // F_CCW_BEGIN
-    {F_CCW_NEXT, F_CCW_FINAL, R_START,     R_START | DIR_CCW}, // F_CCW_FINAL
-    {F_CCW_NEXT, F_CCW_FINAL, F_CCW_BEGIN, R_START},           // F_CCW_NEXT
+    {R_START, F_CW_BEGIN, F_CCW_BEGIN, R_START},           // R_START
+    {F_CW_NEXT, R_START, F_CW_FINAL, R_START | DIR_CW},    // F_CW_FINAL
+    {F_CW_NEXT, F_CW_BEGIN, R_START, R_START},             // F_CW_BEGIN
+    {F_CW_NEXT, F_CW_BEGIN, F_CW_FINAL, R_START},          // F_CW_NEXT
+    {F_CCW_NEXT, R_START, F_CCW_BEGIN, R_START},           // F_CCW_BEGIN
+    {F_CCW_NEXT, F_CCW_FINAL, R_START, R_START | DIR_CCW}, // F_CCW_FINAL
+    {F_CCW_NEXT, F_CCW_FINAL, F_CCW_BEGIN, R_START},       // F_CCW_NEXT
 };
 
-static uint8_t IRAM_ATTR _process(rotary_encoder_info_t * info)
+static uint8_t IRAM_ATTR _process(rotary_encoder_info_t *info)
 {
     uint8_t event = 0;
     if (info != NULL)
@@ -173,9 +173,9 @@ static uint8_t IRAM_ATTR _process(rotary_encoder_info_t * info)
 }
 
 // static void _isr_rotenc(void * args)
-static void IRAM_ATTR _isr_rotenc(void * args)
+static void IRAM_ATTR _isr_rotenc(void *args)
 {
-    rotary_encoder_info_t * info = (rotary_encoder_info_t *)args;
+    rotary_encoder_info_t *info = (rotary_encoder_info_t *)args;
     uint8_t event = _process(info);
     bool send_event = false;
 
@@ -198,13 +198,13 @@ static void IRAM_ATTR _isr_rotenc(void * args)
     if (send_event && info->queue)
     {
         rotary_encoder_event_t queue_event =
-        {
-            .state =
             {
-                .position = info->state.position,
-                .direction = info->state.direction,
-            },
-        };
+                .state =
+                    {
+                        .position = info->state.position,
+                        .direction = info->state.direction,
+                    },
+            };
         BaseType_t task_woken = pdFALSE;
         xQueueOverwriteFromISR(info->queue, &queue_event, &task_woken);
         if (task_woken)
@@ -226,12 +226,12 @@ static void IRAM_ATTR _isr_button(void *args)
         {
             rotary_encoder_event_t event = {
                 .state = info->state,
-                .button_event = ROTARY_ENCODER_EVENT_BUTTON_PRESSED
-            };
+                .button_event = ROTARY_ENCODER_EVENT_BUTTON_PRESSED};
             BaseType_t task_woken = pdFALSE;
             if (info->queue)
                 xQueueOverwriteFromISR(info->queue, &event, &task_woken);
-            if (task_woken) portYIELD_FROM_ISR();
+            if (task_woken)
+                portYIELD_FROM_ISR();
             last_press_time = now;
         }
     }
@@ -239,25 +239,25 @@ static void IRAM_ATTR _isr_button(void *args)
     {
         rotary_encoder_event_t event = {
             .state = info->state,
-            .button_event = ROTARY_ENCODER_EVENT_BUTTON_RELEASED
-        };
+            .button_event = ROTARY_ENCODER_EVENT_BUTTON_RELEASED};
         BaseType_t task_woken = pdFALSE;
         if (info->queue)
             xQueueOverwriteFromISR(info->queue, &event, &task_woken);
-        if (task_woken) portYIELD_FROM_ISR();
+        if (task_woken)
+            portYIELD_FROM_ISR();
     }
 }
 
-esp_err_t rotary_encoder_init(rotary_encoder_info_t * info, gpio_num_t pin_a, gpio_num_t pin_b)
+esp_err_t rotary_encoder_init(rotary_encoder_info_t *info, gpio_num_t pin_a, gpio_num_t pin_b)
 {
     // #define GPIO_BIT_MASK  ((1ULL<<GPIO_NUM_32) | (1ULL<<GPIO_NUM_33))
-    uint64_t GPIO_BIT_MASK = ((1ULL<<pin_a) | (1ULL<<pin_b));
+    uint64_t GPIO_BIT_MASK = ((1ULL << pin_a) | (1ULL << pin_b));
     esp_err_t err = ESP_OK;
     if (info)
     {
         info->pin_a = pin_a;
         info->pin_b = pin_b;
-        info->table = &_ttable_full[0];   //enable_half_step ? &_ttable_half[0] : &_ttable_full[0];
+        info->table = &_ttable_full[0]; // enable_half_step ? &_ttable_half[0] : &_ttable_full[0];
         info->table_state = R_START;
         info->state.position = 0;
         info->state.direction = ROTARY_ENCODER_DIRECTION_NOT_SET;
@@ -268,13 +268,13 @@ esp_err_t rotary_encoder_init(rotary_encoder_info_t * info, gpio_num_t pin_a, gp
         // gpio_set_direction(info->pin_a, GPIO_MODE_INPUT);
         // gpio_set_intr_type(info->pin_a, GPIO_INTR_ANYEDGE);
         gpio_config_t io_conf;
-	    io_conf.pin_bit_mask = GPIO_BIT_MASK;
+        io_conf.pin_bit_mask = GPIO_BIT_MASK;
         io_conf.mode = GPIO_MODE_INPUT;
         // io_conf.pull_up_en = GPIO_PULLUP_ONLY;
         io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
         io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
         io_conf.intr_type = GPIO_INTR_ANYEDGE;
-	    gpio_config(&io_conf);
+        gpio_config(&io_conf);
 
         // gpio_pad_select_gpio(info->pin_b);
         // gpio_set_pull_mode(info->pin_b, GPIO_PULLUP_ONLY);
@@ -293,7 +293,7 @@ esp_err_t rotary_encoder_init(rotary_encoder_info_t * info, gpio_num_t pin_a, gp
     return err;
 }
 
-esp_err_t rotary_encoder_enable_half_steps(rotary_encoder_info_t * info, bool enable)
+esp_err_t rotary_encoder_enable_half_steps(rotary_encoder_info_t *info, bool enable)
 {
     esp_err_t err = ESP_OK;
     if (info)
@@ -309,7 +309,7 @@ esp_err_t rotary_encoder_enable_half_steps(rotary_encoder_info_t * info, bool en
     return err;
 }
 
-esp_err_t rotary_encoder_flip_direction(rotary_encoder_info_t * info)
+esp_err_t rotary_encoder_flip_direction(rotary_encoder_info_t *info)
 {
     esp_err_t err = ESP_OK;
     if (info)
@@ -326,7 +326,7 @@ esp_err_t rotary_encoder_flip_direction(rotary_encoder_info_t * info)
     return err;
 }
 
-esp_err_t rotary_encoder_uninit(rotary_encoder_info_t * info)
+esp_err_t rotary_encoder_uninit(rotary_encoder_info_t *info)
 {
     esp_err_t err = ESP_OK;
     if (info)
@@ -347,7 +347,7 @@ QueueHandle_t rotary_encoder_create_queue(void)
     return xQueueCreate(EVENT_QUEUE_LENGTH, sizeof(rotary_encoder_event_t));
 }
 
-esp_err_t rotary_encoder_set_queue(rotary_encoder_info_t * info, QueueHandle_t queue)
+esp_err_t rotary_encoder_set_queue(rotary_encoder_info_t *info, QueueHandle_t queue)
 {
     esp_err_t err = ESP_OK;
     if (info)
@@ -362,7 +362,7 @@ esp_err_t rotary_encoder_set_queue(rotary_encoder_info_t * info, QueueHandle_t q
     return err;
 }
 
-esp_err_t rotary_encoder_get_state(const rotary_encoder_info_t * info, rotary_encoder_state_t * state)
+esp_err_t rotary_encoder_get_state(const rotary_encoder_info_t *info, rotary_encoder_state_t *state)
 {
     esp_err_t err = ESP_OK;
     if (info && state)
@@ -379,7 +379,7 @@ esp_err_t rotary_encoder_get_state(const rotary_encoder_info_t * info, rotary_en
     return err;
 }
 
-esp_err_t rotary_encoder_reset(rotary_encoder_info_t * info)
+esp_err_t rotary_encoder_reset(rotary_encoder_info_t *info)
 {
     esp_err_t err = ESP_OK;
     if (info)
@@ -395,17 +395,17 @@ esp_err_t rotary_encoder_reset(rotary_encoder_info_t * info)
     return err;
 }
 
-esp_err_t rotary_encoder_set_button(rotary_encoder_info_t * info, gpio_num_t pin_btn)
+esp_err_t rotary_encoder_set_button(rotary_encoder_info_t *info, gpio_num_t pin_btn)
 {
-    if (!info) return ESP_ERR_INVALID_ARG;
+    if (!info)
+        return ESP_ERR_INVALID_ARG;
     info->pin_btn = pin_btn;
     gpio_config_t io_conf = {
         .pin_bit_mask = (1ULL << pin_btn),
         .mode = GPIO_MODE_INPUT,
         .pull_up_en = GPIO_PULLUP_ENABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_ANYEDGE
-    };
+        .intr_type = GPIO_INTR_ANYEDGE};
     gpio_config(&io_conf);
     gpio_isr_handler_add(pin_btn, _isr_button, info);
     return ESP_OK;

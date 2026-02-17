@@ -74,6 +74,7 @@ Serial monitor: `monitor_speed = 115200` — см. `platformio.ini`.
 ## Завершение
 
 Если нужно, могу:
+
 - Перенести `lib/encoder` в `components/` (ESP-IDF style) и обновить `CMakeLists.txt` — сделаю аккуратно.
 - Добавить примеры unit-интеграционных тестов для логики событий энкодера (PlatformIO test runner).
 
